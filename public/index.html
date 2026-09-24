@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Waiver Wire Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --chalk: #EEF1EC;
+    --paper: #FFFFFF;
+    --ink: #17231C;
+    --muted: #5B6A60;
+    --line: #CBD3CA;
+    --field: #2F6B45;
+    --amber: #A86B12;
+    --clay: #A8432F;
+    --display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    --body: 'Barlow', 'Segoe UI', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--chalk); color: var(--ink); font: 16px/1.45 var(--body); }
+  main { max-width: 34rem; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+  h1, h2 { font-family: var(--display); font-weight: 700; margin: 0; line-height: 1.05; }
+  h1 { font-size: 2.6rem; letter-spacing: -0.01em; }
+  h2 { font-size: 1.5rem; margin: 2rem 0 0.75rem; }
+  .team { color: var(--muted); margin: 0.25rem 0 0; }
+  .sample { background: var(--ink); color: var(--chalk); font-size: 0.9rem; padding: 0.5rem 0.75rem; border-radius: 6px; margin-bottom: 1rem; }
+
+  /* The waiver line: your place in the order */
+  .order { margin-top: 1.25rem; }
+  .queue { display: flex; gap: 5px; }
+  .queue span { flex: 1; height: 14px; border-radius: 3px; background: var(--line); }
+  .queue span.you { background: var(--ink); height: 22px; margin-top: -4px; }
+  .order p { margin: 0.5rem 0 0; font-family: var(--display); font-size: 1.25rem; font-weight: 600; }
+
+  /* Where you're thin */
+  .gaps { list-style: none; margin: 0; padding: 0; background: var(--paper); border-radius: 8px; border: 1px solid var(--line); }
+  .gap { display: grid; grid-template-columns: 3.2rem 1fr 3.6rem; gap: 0.25rem 0.75rem; align-items: center; padding: 0.6rem 0.9rem; border-top: 1px solid var(--line); }
+  .gap:first-child { border-top: 0; }
+  .gap .pos { font-family: var(--display); font-weight: 700; font-size: 1.15rem; }
+  .gap .who { font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gap .num { font-family: var(--display); font-weight: 600; text-align: right; font-size: 1.1rem; }
+  .gap .num.behind { color: var(--clay); }
+  .gap .num.ahead { color: var(--field); }
+  .gap .note { grid-column: 2 / 4; font-size: 0.85rem; color: var(--clay); }
+  .bar { grid-column: 2 / 3; height: 6px; background: var(--chalk); border-radius: 3px; position: relative; }
+  .bar i { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+  .legend { font-size: 0.85rem; color: var(--muted); margin: 0.5rem 0 0; }
+
+  /* Moves: transaction slips */
+  .moves { display: grid; gap: 0.75rem; }
+  .slip { background: var(--paper); border: 1px solid var(--line); border-left: 5px solid var(--ink); border-radius: 6px; padding: 0.85rem 0.9rem; }
+  .slip.claim { border-left-color: var(--field); }
+  .slip.wait { border-left-color: var(--amber); }
+  .slip header { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+  .call { font-family: var(--display); font-weight: 700; font-size: 1.2rem; }
+  .claim .call { color: var(--field); }
+  .wait .call { color: var(--amber); }
+  .pts { font-family: var(--display); font-weight: 600; color: var(--muted); }
+  .line { display: flex; gap: 0.6rem; align-items: baseline; margin-top: 0.35rem; font-size: 1.05rem; }
+  .line b { font-family: var(--display); font-size: 1.3rem; width: 1rem; text-align: center; }
+  .line.add b { color: var(--field); }
+  .line.drop b { color: var(--clay); }
+  .line small { color: var(--muted); }
+  .slip p { margin: 0.6rem 0 0; font-size: 0.95rem; }
+
+  .try { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 0.9rem; }
+  .try p { margin: 0 0 0.75rem; font-size: 0.95rem; }
+  .try label { display: block; font-weight: 600; font-size: 0.9rem; margin: 0.5rem 0 0.25rem; }
+  .try input, .try select { width: 100%; font: 1rem var(--body); padding: 0.55rem 0.6rem; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); }
+  .try input:focus-visible, .try select:focus-visible { outline: 3px solid var(--field); outline-offset: 1px; }
+  .try .row { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+  .try .msg { color: var(--clay); font-size: 0.9rem; margin: 0.5rem 0 0; }
+  .try small { color: var(--muted); display: block; margin-top: 0.6rem; }
+  .sample a, .sample button { color: var(--chalk); }
+  .link { background: none; color: inherit; padding: 0; text-decoration: underline; font-weight: 600; }
+  .state { padding: 2rem 0; color: var(--muted); }
+  .state.error { color: var(--clay); }
+  footer { margin-top: 2rem; font-size: 0.85rem; color: var(--muted); }
+  button { font: 600 1rem var(--body); background: var(--ink); color: var(--chalk); border: 0; border-radius: 6px; padding: 0.6rem 1rem; cursor: pointer; }
+  button:focus-visible { outline: 3px solid var(--field); outline-offset: 2px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .queue span.you { animation: step 0.6s ease-out; }
+    @keyframes step { from { transform: translateY(8px); opacity: 0; } }
+  }
+</style>
+</head>
+<body>
+<main id="app"><p class="state">Reading your league…</p></main>
+
+<script>
+const app = document.getElementById('app');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ord = n => n + (['th', 'st', 'nd', 'rd'][((n % 100) - 20) % 10] || ['th', 'st', 'nd', 'rd'][n % 100] || 'th');
+const posName = p => p === 'DST' ? 'D/ST' : p;
+
+function gapsHtml(gaps, week) {
+  const max = Math.max(4, ...gaps.map(g => Math.abs(g.weightedGap)));
+  return gaps.map(g => {
+    const behind = g.weightedGap > 0.5, ahead = g.weightedGap < -0.5;
+    const width = Math.min(50, Math.abs(g.weightedGap) / max * 50);
+    const bar = behind
+      ? `<i style="right:50%;width:${width}%;background:var(--clay)"></i>`
+      : `<i style="left:50%;width:${width}%;background:var(--field)"></i>`;
+    const note = g.byeNext ? `<span class="note">${esc(g.starterNow)} is on bye in Week ${week + 1}</span>` : '';
+    return `<li class="gap">
+      <span class="pos">${esc(posName(g.pos))}</span>
+      <span class="who">${esc(g.starterNow || 'Empty')}</span>
+      <span class="num ${behind ? 'behind' : ahead ? 'ahead' : ''}">${behind ? '−' : ahead ? '+' : ''}${Math.abs(g.weightedGap).toFixed(1)}</span>
+      <span class="bar">${bar}</span>${note}
+    </li>`;
+  }).join('');
+}
+
+function moveHtml(m) {
+  const drop = m.drop
+    ? `<div class="line drop"><b>−</b><span>${esc(m.drop.name)} <small>${esc(posName(m.drop.pos))}, ${esc(m.drop.proTeam)}</small></span></div>`
+    : `<div class="line drop"><b>−</b><span><small>Open roster spot, no drop needed</small></span></div>`;
+  return `<article class="slip ${m.advice.call}">
+    <header><span class="call">${esc(m.advice.label)}</span><span class="pts">+${m.gain.toFixed(1)} pts</span></header>
+    <div class="line add"><b>+</b><span>${esc(m.add.name)} <small>${esc(posName(m.add.pos))}, ${esc(m.add.proTeam)}</small></span></div>
+    ${drop}
+    <p>${esc(m.reason)}</p>
+  </article>`;
+}
+
+function render(d) {
+  const { team, week } = d;
+  const queue = Array.from({ length: team.teamCount }, (_, i) => `<span class="${i + 1 === team.waiverRank ? 'you' : ''}"></span>`).join('');
+  const moves = d.recommendations.length
+    ? d.recommendations.map(moveHtml).join('')
+    : `<p class="state">No move beats your current roster this week. Check back after injury news or the next waiver run.</p>`;
+  app.innerHTML = `
+    ${d.source === 'sample' ? '<div class="sample">Sample league with made-up players. <a href="#try">Try your own league</a></div>' : ''}
+    ${d.source === 'public' ? `<div class="sample">Showing ESPN league ${esc(current.league)}. <button class="link" id="back">Back to the sample league</button></div>` : ''}
+    <h1>Week ${week} waivers</h1>
+    <p class="team">${esc(team.name)}</p>
+    ${team.waiverRank ? `<section class="order" aria-label="Waiver order">
+      <div class="queue" aria-hidden="true">${queue}</div>
+      <p>You're ${ord(team.waiverRank)} of ${team.teamCount} in the waiver order</p>
+    </section>` : ''}
+    <h2>Moves worth making</h2>
+    <div class="moves">${moves}</div>
+    <h2>Where you stand</h2>
+    <ul class="gaps">${gapsHtml(d.gaps, week)}</ul>
+    <p class="legend">Your starter's projection against the league's median starter at that slot. Week ${week} counts fully, Week ${week + 1} counts half.</p>
+    <h2 id="try">Try your own league</h2>
+    <form class="try" id="tryForm">
+      <p>Works with public ESPN leagues. Nothing you enter is stored on the site or shared; only your own browser remembers the league ID for next time.</p>
+      <label for="leagueId">ESPN league ID</label>
+      <input id="leagueId" inputmode="numeric" autocomplete="off" placeholder="The number after leagueId= in your league's URL" value="${esc(savedLeague())}">
+      <div id="teamPick" hidden>
+        <label for="teamId">Your team</label>
+        <select id="teamId"></select>
+      </div>
+      <p class="msg" id="tryMsg" role="status"></p>
+      <div class="row"><button type="submit" id="tryBtn">Find my league</button></div>
+      <small>Private leagues need an ESPN login, so they only work when you run the app on your own computer. See the README.</small>
+    </form>
+    <footer>
+      <button id="refresh">Refresh</button>
+      <p>Projections from ESPN. Reasons written by ${d.reasonSource === 'claude' ? 'Claude from the rules’ output' : 'built-in templates'}.</p>
+    </footer>`;
+  document.getElementById('refresh').onclick = () => load(current);
+  const back = document.getElementById('back');
+  if (back) back.onclick = () => load({});
+  wireForm();
+}
+
+// Remembered only in this visitor's own browser, to prefill the form. Never auto-loaded.
+function savedLeague() { try { return localStorage.getItem('waiver:league') || ''; } catch { return ''; } }
+function saveLeague(id) { try { localStorage.setItem('waiver:league', id); } catch {} }
+
+function wireForm() {
+  const form = document.getElementById('tryForm');
+  const input = document.getElementById('leagueId');
+  const pick = document.getElementById('teamPick');
+  const select = document.getElementById('teamId');
+  const msg = document.getElementById('tryMsg');
+  const btn = document.getElementById('tryBtn');
+  input.oninput = () => { pick.hidden = true; btn.textContent = 'Find my league'; msg.textContent = ''; };
+  form.onsubmit = async e => {
+    e.preventDefault();
+    const league = input.value.trim();
+    msg.textContent = '';
+    if (!/^\d+$/.test(league)) { msg.textContent = 'Enter the league ID as a number.'; return; }
+    if (!pick.hidden && select.value) { saveLeague(league); load({ league, team: select.value }); return; }
+    btn.disabled = true; btn.textContent = 'Finding your league…';
+    try {
+      const res = await fetch(`/api/teams?league=${encodeURIComponent(league)}`);
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error);
+      select.innerHTML = d.teams.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
+      pick.hidden = false;
+      btn.textContent = 'Show my moves';
+      select.focus();
+    } catch (err) {
+      msg.textContent = err.message || 'Couldn\'t reach ESPN. Try again.';
+      btn.textContent = 'Find my league';
+    } finally { btn.disabled = false; }
+  };
+}
+
+let current = {};
+async function load(params = {}) {
+  current = params;
+  app.innerHTML = '<p class="state">Reading your league…</p>';
+  window.scrollTo(0, 0);
+  try {
+    const qs = new URLSearchParams(params).toString();
+    const res = await fetch('/api/recommend' + (qs ? '?' + qs : ''));
+    const d = await res.json();
+    if (!res.ok) throw new Error(d.error || `Request failed (${res.status})`);
+    render(d);
+  } catch (err) {
+    app.innerHTML = `<p class="state error">Couldn't load recommendations: ${esc(err.message)}</p><button onclick="load({})">Back to the sample league</button>`;
+  }
+}
+load();
+</script>
+</body>
+</html>
