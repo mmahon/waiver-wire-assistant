@@ -1,6 +1,6 @@
 # Waiver Wire Assistant
 
-**Live demo:** [LIVE DEMO URL] (https://mattco-waiver-assist.netlify.app/) 
+**Live demo:** [Waiver Wire Assistant](https://mattco-waiver-assist.netlify.app/) 
 **Case study:** [Product brief](https://docs.google.com/document/d/1tdaiGJsU9hPwl69Xbx0en2N4Why2evHFQLNC6uBXqjs/edit)
 
 A side project built for my own ESPN league. Each week it recommends the waiver moves worth making for *your* roster, looks ahead to next week's byes, and says whether a player is worth spending your waiver position on. I wrote the spec, built it with AI coding tools, tested it on my own team, and wrote up what I learned and what I'd build next. The case study covers the product decisions; this README covers how it works and how to run it.
