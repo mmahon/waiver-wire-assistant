@@ -1,6 +1,15 @@
 # Waiver Wire Assistant
 
-Recommends waiver moves for an ESPN fantasy football team: which player to add, who to drop, and whether a move is worth spending your waiver position on.
+**Live demo:** [LIVE DEMO URL] (https://mattco-waiver-assist.netlify.app/) 
+**Case study:** [Product brief](https://docs.google.com/document/d/1tdaiGJsU9hPwl69Xbx0en2N4Why2evHFQLNC6uBXqjs/edit)
+
+A side project built for my own ESPN league. Each week it recommends the waiver moves worth making for *your* roster, looks ahead to next week's byes, and says whether a player is worth spending your waiver position on. I wrote the spec, built it with AI coding tools, tested it on my own team, and wrote up what I learned and what I'd build next. The case study covers the product decisions; this README covers how it works and how to run it.
+
+The live demo opens on a sample league with made-up players. You can also try any public ESPN league.
+
+---
+
+## How it works
 
 - **Two-week view.** Scores each lineup slot against the league's median starter, this week at full weight and next week at half weight, so upcoming byes count.
 - **Real roster math.** Tests every add/drop pair against your best possible lineup, so bench coverage and byes are handled automatically. Moves build on each other, so you won't see two kickers for one bye.
